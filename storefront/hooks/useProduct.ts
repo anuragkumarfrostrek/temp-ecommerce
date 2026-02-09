@@ -1,21 +1,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Product, UseProductReturn } from '@/types/product';
-import { getProductById, delay } from '@/data/mockProducts';
+import { Product, getProductById } from '@/lib/api';
 
-// Simulated API delay in milliseconds
-const API_DELAY = 600;
+interface UseProductReturn {
+    data: Product | null;
+    loading: boolean;
+    error: Error | null;
+    refetch: () => void;
+}
 
 /**
- * Custom hook to fetch a single product by ID
+ * Custom hook to fetch a single product by ID from the API
  * Returns { data, loading, error, refetch }
- * 
- * Usage:
- * const { data, loading, error, refetch } = useProduct('PROD-001');
- * 
- * To replace with real API later, simply change the fetchProduct function
- * to call your actual API endpoint.
  */
 export function useProduct(productId: string): UseProductReturn {
     const [data, setData] = useState<Product | null>(null);
@@ -33,21 +30,7 @@ export function useProduct(productId: string): UseProductReturn {
             setLoading(true);
             setError(null);
 
-            // Simulate API call with delay
-            await delay(API_DELAY);
-
-            // TODO: Replace with actual API call
-            // const response = await fetch(`/api/products/${productId}`);
-            // const result = await response.json();
-            // setData(result.data);
-
-            // Using mock data for now
-            const product = getProductById(productId);
-
-            if (!product) {
-                throw new Error(`Product with ID "${productId}" not found`);
-            }
-
+            const product = await getProductById(productId);
             setData(product);
         } catch (err) {
             setError(err instanceof Error ? err : new Error('Failed to fetch product'));
