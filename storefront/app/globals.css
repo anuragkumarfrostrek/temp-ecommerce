@@ -1,82 +1,133 @@
 @import "tailwindcss";
 
-:root {
-  /* Wine Store Theme - White + Green */
-  --background: #ffffff;
-  --foreground: #1f2937;
-
-  /* Primary: Emerald Green */
-  --primary: #059669;
-  --primary-light: #10b981;
-  --primary-dark: #047857;
-
-  /* Accent: Forest Green */
-  --accent: #064e3b;
-  --accent-light: #065f46;
-}
+/* === KSP Wines — Luxury Wine Theme === */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-light: var(--primary-light);
-  --color-primary-dark: var(--primary-dark);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-cream: #FAF7F2;
+  --color-cream-dark: #F0EBE3;
+  --color-burgundy: #722F37;
+  --color-burgundy-dark: #5A252C;
+  --color-burgundy-light: #8B3A42;
+  --color-wine-gold: #C9A96E;
+  --color-wine-gold-light: #D4B87A;
+  --color-charcoal: #2D2926;
+  --color-warm-gray: #6B6462;
+  --color-light-border: #E8E2DA;
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f0f0f;
-    --foreground: #f4f4f5;
-  }
+:root {
+  --background: #FAF7F2;
+  --foreground: #2D2926;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Wine Store Custom Scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f4f4f5;
+  background: #FAF7F2;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 4px;
+  background: #C9A96E;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #10b981;
+  background: #722F37;
 }
 
-@media (prefers-color-scheme: dark) {
-  ::-webkit-scrollbar-track {
-    background: #18181b;
+/* Focus */
+*:focus-visible {
+  outline: 2px solid #722F37;
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background-color: #722F37;
+  color: white;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
 
-  ::-webkit-scrollbar-thumb {
-    background: #3f3f46;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #10b981;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* Line clamp utility */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #E8E2DA 25%, #F0EBE3 50%, #E8E2DA 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Line clamp */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -84,28 +135,26 @@ html {
   overflow: hidden;
 }
 
-/* Focus styles - Emerald */
-*:focus-visible {
-  outline: 2px solid #10b981;
-  outline-offset: 2px;
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Selection - Emerald */
-::selection {
-  background-color: #10b981;
-  color: white;
+/* Glass effect */
+.glass {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(250, 247, 242, 0.9);
 }
 
-/* Wine Store Accent Gradient */
+/* Wine gradient */
 .wine-gradient {
-  background: linear-gradient(135deg, #059669 0%, #047857 50%, #064e3b 100%);
+  background: linear-gradient(135deg, #722F37 0%, #5A252C 50%, #3D1A1E 100%);
 }
 
-/* Elegant card shadow */
-.wine-shadow {
-  box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.1), 0 2px 4px -1px rgba(5, 150, 105, 0.06);
-}
-
-.wine-shadow-lg {
-  box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.1), 0 4px 6px -2px rgba(5, 150, 105, 0.05);
+/* Gold gradient */
+.gold-gradient {
+  background: linear-gradient(135deg, #C9A96E 0%, #D4B87A 50%, #C9A96E 100%);
 }

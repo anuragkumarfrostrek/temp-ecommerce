@@ -1,174 +1,295 @@
-import Link from "next/link";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { ArrowRight, Award, Star, Mail, Wine, Grape, Sparkles } from 'lucide-react';
+import { getProducts } from '@/lib/api';
+import { Product } from '@/types';
+import ProductCard from '@/components/ProductCard';
+import { SkeletonProductGrid } from '@/components/Skeleton';
+
+export default function HomePage() {
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProducts({ limit: 8 }).then(products => {
+      setFeaturedProducts(products);
+      setLoading(false);
+    });
+  }, []);
+
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-green-50 dark:from-emerald-950/30 dark:via-zinc-950 dark:to-green-950/20" />
+    <div className="bg-cream">
+      {/* ─── HERO SECTION ─── */}
+      <section className="relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `linear-gradient(to bottom, rgba(45,41,38,0.5), rgba(45,41,38,0.7)), 
+              url('https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=1920&q=80')`,
+          }}
+        />
+        <div className="relative mx-auto max-w-7xl px-4 py-28 sm:py-36 lg:py-44 text-center">
+          <p className="animate-fade-in text-sm uppercase tracking-[0.3em] text-wine-gold-light font-medium mb-4">
+            Premium Vietnamese Wines
+          </p>
+          <h1 className="animate-fade-in-up font-serif text-4xl sm:text-5xl lg:text-7xl font-bold text-white leading-tight">
+            Tinh Hoa Rượu Vang<br />
+            <span className="text-wine-gold">Việt Nam</span>
+          </h1>
+          <p className="animate-fade-in-up mt-6 mx-auto max-w-2xl text-base sm:text-lg text-cream-dark/90 leading-relaxed"
+            style={{ animationDelay: '0.2s' }}>
+            Khám phá hương vị truyền thống Việt Nam, được đóng gói với niềm đam mê
+            và kỹ thuật tinh tế từ những vùng đất trù phú nhất.
+          </p>
+          <div className="animate-fade-in-up mt-8 flex flex-wrap justify-center gap-4" style={{ animationDelay: '0.4s' }}>
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-2 rounded-lg bg-burgundy px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-burgundy-dark hover:shadow-xl hover:-translate-y-0.5"
+            >
+              Shop Now
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/about"
+              className="inline-flex items-center gap-2 rounded-lg border-2 border-white/30 px-8 py-3.5 text-sm font-semibold text-white transition-all hover:bg-white/10"
+            >
+              Our Story
+            </Link>
+          </div>
+        </div>
+      </section>
 
-        {/* Decorative Elements */}
-        <div className="absolute right-0 top-0 h-96 w-96 translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-200/50 blur-3xl dark:bg-emerald-900/20" />
-        <div className="absolute bottom-0 left-0 h-64 w-64 -translate-x-1/2 translate-y-1/2 rounded-full bg-green-200/50 blur-3xl dark:bg-green-900/20" />
+      {/* ─── FEATURED COLLECTIONS ─── */}
+      <section className="py-20 px-4">
+        <div className="mx-auto max-w-7xl">
+          <div className="text-center mb-12">
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">
+              Bộ Sưu Tập Nổi Bật
+            </h2>
+            <p className="mt-3 text-warm-gray">Discover our finest curated collections</p>
+          </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8 lg:py-40">
-          <div className="mx-auto max-w-3xl text-center">
-            {/* Badge */}
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-4 py-2 backdrop-blur-sm dark:border-emerald-800 dark:bg-zinc-900/80">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Live API Connected</span>
-            </div>
-
-            {/* Heading */}
-            <h1 className="text-5xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-6xl lg:text-7xl">
-              Premium{" "}
-              <span className="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">
-                Wine Collection
-              </span>
-            </h1>
-
-            {/* Description */}
-            <p className="mt-6 text-xl leading-8 text-zinc-600 dark:text-zinc-400">
-              Discover our curated selection of the finest wines from renowned vineyards around the world.
-              Each bottle tells a story of tradition, craftsmanship, and exceptional taste.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {[
+              { icon: Wine, title: 'Red Wines', subtitle: 'Bold & Complex', color: 'from-red-900/20 to-red-800/10' },
+              { icon: Sparkles, title: 'White Wines', subtitle: 'Crisp & Elegant', color: 'from-amber-100/60 to-yellow-50/40' },
+              { icon: Grape, title: 'Sparkling', subtitle: 'Celebratory', color: 'from-pink-100/60 to-rose-50/40' },
+            ].map((collection) => (
               <Link
-                href="/products"
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:bg-emerald-700 hover:shadow-xl hover:shadow-emerald-500/40"
+                key={collection.title}
+                href={`/products?category=${encodeURIComponent(collection.title.split(' ')[0])}`}
+                className="group relative overflow-hidden rounded-2xl border border-light-border bg-white p-8 text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
               >
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Browse Collection
+                <div className={`absolute inset-0 bg-gradient-to-br ${collection.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                <div className="relative">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-cream-dark">
+                    <collection.icon className="h-7 w-7 text-burgundy" />
+                  </div>
+                  <h3 className="font-serif text-xl font-semibold text-charcoal">{collection.title}</h3>
+                  <p className="mt-1 text-sm text-warm-gray">{collection.subtitle}</p>
+                  <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-burgundy">
+                    Explore <ArrowRight className="h-3 w-3" />
+                  </span>
+                </div>
               </Link>
-              <a
-                href="#features"
-                className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-8 py-4 text-lg font-semibold text-zinc-700 transition-all hover:border-emerald-300 hover:bg-emerald-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/30"
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── OUR STORY ─── */}
+      <section className="py-20 px-4 bg-white">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 items-center">
+            <div>
+              <p className="text-sm uppercase tracking-[0.2em] text-wine-gold font-medium mb-3">Our Heritage</p>
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal leading-tight">
+                Câu Chuyện Của Chúng Tôi
+              </h2>
+              <p className="mt-6 text-warm-gray leading-relaxed">
+                Tại VinoViet, chúng tôi tin rằng mỗi chai rượu vang là một câu chuyện. Từ những cánh đồng nho
+                trải dài trên cao nguyên Đà Lạt cho đến những khu vườn xanh mướt ở Ninh Thuận, chúng tôi tìm
+                kiếm và chọn lọc những nguyên liệu tốt nhất để tạo ra những sản phẩm đặc biệt.
+              </p>
+              <p className="mt-4 text-warm-gray leading-relaxed">
+                Với hơn một thập kỷ kinh nghiệm trong ngành rượu vang, đội ngũ nghệ nhân của chúng tôi kết hợp
+                kỹ thuật truyền thống châu Âu với hương vị độc đáo của Việt Nam, tạo nên những chai rượu không
+                chỉ là thức uống, mà còn là niềm tự hào dân tộc.
+              </p>
+              <Link
+                href="/about"
+                className="mt-6 inline-flex items-center gap-2 font-serif text-sm font-semibold text-burgundy hover:text-burgundy-dark transition-colors"
               >
-                Learn More
-              </a>
+                Read More <ArrowRight className="h-4 w-4" />
+              </Link>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <div id="features" className="border-y border-zinc-200 bg-zinc-50 py-20 dark:border-zinc-800 dark:bg-zinc-900/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="mb-4 text-center text-sm font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-            Live API Tester
-          </h2>
-          <h3 className="mb-12 text-center text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-            Real Backend Integration
-          </h3>
-
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Feature 1 */}
-            <div className="rounded-2xl border border-zinc-200 bg-white p-8 transition-all hover:border-emerald-200 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-800">
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
-                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-                </svg>
-              </div>
-              <h4 className="mb-3 text-xl font-semibold text-zinc-900 dark:text-zinc-100">Real API Calls</h4>
-              <p className="text-zinc-600 dark:text-zinc-400">
-                Connected to backend at localhost:5000. All product data is fetched live from MongoDB.
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="rounded-2xl border border-zinc-200 bg-white p-8 transition-all hover:border-emerald-200 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-800">
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400">
-                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h4 className="mb-3 text-xl font-semibold text-zinc-900 dark:text-zinc-100">Full Schema Support</h4>
-              <p className="text-zinc-600 dark:text-zinc-400">
-                UI designed to display all 6 product schema sections: Identity, Specs, Packaging, Variants, Info, Assets.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="rounded-2xl border border-zinc-200 bg-white p-8 transition-all hover:border-emerald-200 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-emerald-800">
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-teal-100 text-teal-600 dark:bg-teal-900/50 dark:text-teal-400">
-                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h4 className="mb-3 text-xl font-semibold text-zinc-900 dark:text-zinc-100">Cart Functionality</h4>
-              <p className="text-zinc-600 dark:text-zinc-400">
-                Full shopping cart with localStorage persistence. Add items, adjust quantities, checkout ready.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* API Info Section */}
-      <div className="py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 p-8 dark:border-emerald-800 dark:from-emerald-950/30 dark:to-green-950/20 lg:p-12">
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-              <div>
-                <h3 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">API Endpoints</h3>
-                <p className="mt-4 text-zinc-600 dark:text-zinc-400">
-                  This storefront connects to the backend API for live data. Add products through the backend to see them here.
-                </p>
-
-                <div className="mt-8 space-y-3">
-                  {[
-                    { method: 'GET', endpoint: '/api/products', desc: 'List all products' },
-                    { method: 'GET', endpoint: '/api/products/:id', desc: 'Get product details' },
-                    { method: 'POST', endpoint: '/api/products', desc: 'Create product' },
-                    { method: 'PATCH', endpoint: '/api/products/:id', desc: 'Update product' },
-                    { method: 'DELETE', endpoint: '/api/products/:id', desc: 'Delete product' },
-                  ].map((api) => (
-                    <div key={api.endpoint} className="flex items-center gap-4 rounded-lg bg-white/60 px-4 py-3 dark:bg-zinc-900/60">
-                      <span className={`rounded px-2 py-0.5 text-xs font-bold ${api.method === 'GET' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400' :
-                          api.method === 'POST' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400' :
-                            api.method === 'PATCH' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400' :
-                              'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400'
-                        }`}>
-                        {api.method}
-                      </span>
-                      <code className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{api.endpoint}</code>
-                      <span className="ml-auto text-xs text-zinc-500 dark:text-zinc-400">{api.desc}</span>
-                    </div>
-                  ))}
+            <div className="relative">
+              <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-cream-dark to-cream overflow-hidden border border-light-border">
+                <div className="flex h-full items-center justify-center">
+                  <div className="text-center p-8">
+                    <span className="text-8xl block mb-4">🍇</span>
+                    <p className="font-serif text-2xl text-charcoal font-semibold">VinoViet</p>
+                    <p className="text-sm text-warm-gray mt-1">Since 2015</p>
+                  </div>
                 </div>
               </div>
-
-              <div className="flex items-center justify-center">
-                <Link
-                  href="/products"
-                  className="group flex flex-col items-center rounded-2xl border border-emerald-300 bg-white p-8 shadow-lg transition-all hover:border-emerald-500 hover:shadow-xl dark:border-emerald-700 dark:bg-zinc-900 dark:hover:border-emerald-500"
-                >
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 transition-transform group-hover:scale-110 dark:bg-emerald-900/50 dark:text-emerald-400">
-                    <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                  <h4 className="mt-6 text-xl font-semibold text-zinc-900 dark:text-zinc-100">View Products</h4>
-                  <p className="mt-2 text-center text-sm text-zinc-500 dark:text-zinc-400">
-                    See all products fetched from the live API
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                    Browse now
-                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                  </span>
-                </Link>
-              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* ─── BEST SELLERS ─── */}
+      <section className="py-20 px-4">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex items-end justify-between mb-12">
+            <div>
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">
+                Sản Phẩm Bán Chạy Nhất
+              </h2>
+              <p className="mt-2 text-warm-gray">Our most popular wines, loved by customers</p>
+            </div>
+            <Link
+              href="/products"
+              className="hidden sm:inline-flex items-center gap-2 text-sm font-medium text-burgundy hover:text-burgundy-dark transition-colors"
+            >
+              View All <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {loading ? (
+            <SkeletonProductGrid count={4} />
+          ) : featuredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {featuredProducts.slice(0, 4).map(product => (
+                <ProductCard key={product.product_id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-light-border bg-white py-16 text-center">
+              <span className="text-5xl block mb-4">🍷</span>
+              <p className="font-serif text-xl text-charcoal">Products coming soon</p>
+              <p className="mt-2 text-sm text-warm-gray">Add products via the admin panel</p>
+            </div>
+          )}
+
+          <div className="mt-8 text-center sm:hidden">
+            <Link href="/products" className="inline-flex items-center gap-2 text-sm font-medium text-burgundy">
+              View All Products <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── AWARDS & CERTIFICATIONS ─── */}
+      <section className="py-20 px-4 bg-white">
+        <div className="mx-auto max-w-7xl text-center">
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">
+            Giải Thưởng & Chứng Nhận
+          </h2>
+          <p className="mt-3 text-warm-gray">Recognition of our commitment to quality</p>
+
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {[
+              { icon: Award, title: 'Gold Medal 2024', subtitle: 'International Wine Challenge', detail: 'VinoViet Classic Red' },
+              { icon: Star, title: 'Best Vietnamese Wine', subtitle: 'Asia Wine Awards 2024', detail: 'Exceptional Quality' },
+              { icon: Award, title: 'Sustainability Award', subtitle: 'Green Vineyards Initiative', detail: 'Eco-Friendly Production' },
+            ].map((award, i) => (
+              <div key={i} className="rounded-2xl border border-light-border bg-cream/50 p-8 transition-all hover:shadow-md">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-wine-gold/20">
+                  <award.icon className="h-6 w-6 text-wine-gold" />
+                </div>
+                <h3 className="font-serif text-lg font-semibold text-charcoal">{award.title}</h3>
+                <p className="mt-1 text-sm text-warm-gray">{award.subtitle}</p>
+                <p className="mt-2 text-xs text-burgundy font-medium">{award.detail}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── TESTIMONIALS ─── */}
+      <section className="py-20 px-4">
+        <div className="mx-auto max-w-7xl">
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal text-center">
+            Khách Hàng Nói Về Chúng Tôi
+          </h2>
+          <p className="mt-3 text-warm-gray text-center">What our customers say</p>
+
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
+            {[
+              {
+                name: 'Nguyễn Minh Anh',
+                role: 'Wine Enthusiast',
+                text: 'Rượu vang của VinoViet mang đến hương vị đặc biệt. Mỗi ngụm là một trải nghiệm mới mẻ và tinh tế.',
+                rating: 5,
+              },
+              {
+                name: 'Trần Văn Hùng',
+                role: 'Restaurant Owner',
+                text: 'Chất lượng ổn định, giá cả hợp lý. Tôi luôn chọn VinoViet cho nhà hàng của mình.',
+                rating: 5,
+              },
+              {
+                name: 'Phạm Thị Lan',
+                role: 'Sommelier',
+                text: 'Một viên ngọc ẩn của Việt Nam. Chất lượng đẳng cấp quốc tế với bản sắc Việt rõ nét.',
+                rating: 5,
+              },
+            ].map((testimonial, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-light-border bg-white p-6 transition-all hover:shadow-md"
+              >
+                <div className="flex gap-1 mb-4">
+                  {Array.from({ length: testimonial.rating }).map((_, j) => (
+                    <Star key={j} className="h-4 w-4 fill-wine-gold text-wine-gold" />
+                  ))}
+                </div>
+                <p className="text-sm text-warm-gray leading-relaxed italic">
+                  &ldquo;{testimonial.text}&rdquo;
+                </p>
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-cream-dark flex items-center justify-center font-serif text-burgundy font-bold">
+                    {testimonial.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-charcoal">{testimonial.name}</p>
+                    <p className="text-xs text-warm-gray">{testimonial.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── NEWSLETTER ─── */}
+      <section className="py-20 px-4 wine-gradient">
+        <div className="mx-auto max-w-2xl text-center">
+          <Mail className="mx-auto h-8 w-8 text-wine-gold mb-4" />
+          <h2 className="font-serif text-3xl font-bold text-white">
+            Đăng Ký Nhận Bản Tin
+          </h2>
+          <p className="mt-3 text-cream-dark/80 text-sm">
+            Nhận thông tin về sản phẩm mới và ưu đãi đặc biệt
+          </p>
+          <form className="mt-8 flex flex-col sm:flex-row gap-3 justify-center" onSubmit={e => e.preventDefault()}>
+            <input
+              type="email"
+              placeholder="Email của bạn..."
+              className="flex-1 rounded-lg bg-white/10 border border-white/20 px-5 py-3 text-sm text-white placeholder-white/50 focus:border-wine-gold focus:outline-none backdrop-blur-sm"
+            />
+            <button
+              type="submit"
+              className="rounded-lg bg-wine-gold px-8 py-3 text-sm font-semibold text-charcoal hover:bg-wine-gold-light transition-colors"
+            >
+              Subscribe
+            </button>
+          </form>
+        </div>
+      </section>
     </div>
   );
 }

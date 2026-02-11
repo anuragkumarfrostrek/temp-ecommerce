@@ -1,88 +1,233 @@
 'use client';
 
-import { useProducts } from '@/hooks/useProducts';
-import { ProductGrid } from '@/components/products/ProductGrid';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { getProducts, searchProducts as apiSearch } from '@/lib/api';
+import { Product } from '@/types';
+import ProductCard from '@/components/ProductCard';
+import { SkeletonProductGrid } from '@/components/Skeleton';
+import { SlidersHorizontal, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function ProductsPage() {
-    const { data, loading, error, refetch } = useProducts();
+const wineTypes = ['All', 'Red', 'White', 'Rosé', 'Sparkling', 'Dessert', 'Fortified'];
+const ITEMS_PER_PAGE = 9;
+
+function ProductsContent() {
+    const searchParams = useSearchParams();
+    const initialSearch = searchParams.get('search') || '';
+    const initialCategory = searchParams.get('category') || '';
+
+    const [products, setProducts] = useState<Product[]>([]);
+    const [filtered, setFiltered] = useState<Product[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState(initialSearch);
+    const [selectedType, setSelectedType] = useState(initialCategory || 'All');
+    const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [showFilters, setShowFilters] = useState(false);
+
+    useEffect(() => {
+        const loadProducts = async () => {
+            setLoading(true);
+            let data: Product[];
+            if (initialSearch) {
+                data = await apiSearch(initialSearch);
+            } else {
+                data = await getProducts({ limit: 100 });
+            }
+            setProducts(data);
+            setLoading(false);
+        };
+        loadProducts();
+    }, [initialSearch]);
+
+    /* Filter logic */
+    useEffect(() => {
+        let result = [...products];
+
+        // Search
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            result = result.filter(
+                p =>
+                    p.product_name.toLowerCase().includes(q) ||
+                    p.brand?.toLowerCase().includes(q) ||
+                    p.description?.toLowerCase().includes(q)
+            );
+        }
+
+        // Type/Category filter
+        if (selectedType !== 'All') {
+            result = result.filter(
+                p =>
+                    p.category?.toLowerCase().includes(selectedType.toLowerCase()) ||
+                    p.sub_category?.toLowerCase().includes(selectedType.toLowerCase())
+            );
+        }
+
+        setFiltered(result);
+        setCurrentPage(1);
+    }, [products, searchQuery, selectedType, priceRange]);
+
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    const paginatedProducts = filtered.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-            {/* Page Header */}
-            <div className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-                    <div className="md:flex md:items-center md:justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
-                                Wine Collection
-                            </h1>
-                            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                                Explore our premium selection • Data loaded from live API
-                            </p>
-                        </div>
-                        <div className="mt-4 flex gap-3 md:mt-0">
-                            {/* Refresh Button */}
-                            <button
-                                onClick={refetch}
-                                disabled={loading}
-                                className="inline-flex items-center gap-2 rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-emerald-700 dark:hover:bg-emerald-950/30"
-                            >
-                                <svg
-                                    className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth={2}
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                    />
-                                </svg>
-                                Refresh
-                            </button>
-
-                            {/* Stats Badge */}
-                            {data && (
-                                <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-100 px-4 py-2.5 text-sm font-medium text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400">
-                                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    {data.length} Products Found
-                                </div>
-                            )}
-                        </div>
-                    </div>
+        <div className="min-h-screen bg-cream">
+            {/* Header */}
+            <div className="border-b border-light-border bg-white px-4 py-6">
+                <div className="mx-auto max-w-7xl">
+                    <h1 className="font-serif text-3xl font-bold text-charcoal">Shop Wines</h1>
+                    <p className="mt-1 text-sm text-warm-gray">
+                        Showing {paginatedProducts.length} of {filtered.length} products
+                    </p>
                 </div>
             </div>
 
-            {/* Products Grid */}
-            <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-                <ProductGrid
-                    products={data}
-                    loading={loading}
-                    error={error}
-                    onRetry={refetch}
-                />
-            </div>
+            <div className="mx-auto max-w-7xl px-4 py-8">
+                <div className="lg:grid lg:grid-cols-[280px_1fr] lg:gap-8">
+                    {/* Mobile filter toggle */}
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="mb-4 flex items-center gap-2 rounded-lg border border-light-border bg-white px-4 py-2 text-sm font-medium text-charcoal lg:hidden"
+                    >
+                        <SlidersHorizontal className="h-4 w-4" />
+                        Filters
+                    </button>
 
-            {/* API Status Footer */}
-            <div className="border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                        <div className="flex items-center gap-2">
-                            <div className={`h-2 w-2 rounded-full ${loading ? 'animate-pulse bg-yellow-400' : error ? 'bg-red-400' : 'bg-emerald-400'}`} />
-                            <span>
-                                {loading ? 'Fetching from API...' : error ? 'API Error - Check if backend is running' : 'Connected to localhost:5000/api/products'}
-                            </span>
+                    {/* Sidebar Filters */}
+                    <aside className={`${showFilters ? 'block' : 'hidden'} lg:block space-y-6 mb-6 lg:mb-0`}>
+                        {/* Search */}
+                        <div className="rounded-xl border border-light-border bg-white p-5">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-warm-gray" />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    placeholder="Search wines..."
+                                    className="w-full rounded-lg border border-light-border bg-cream/50 py-2.5 pl-10 pr-4 text-sm focus:border-burgundy focus:outline-none"
+                                />
+                            </div>
                         </div>
-                        <div className="font-mono text-emerald-600 dark:text-emerald-400">
-                            GET /api/products
+
+                        {/* Wine Type */}
+                        <div className="rounded-xl border border-light-border bg-white p-5">
+                            <h3 className="font-serif text-sm font-semibold text-charcoal mb-3">Wine Type</h3>
+                            <div className="space-y-2">
+                                {wineTypes.map(type => (
+                                    <label key={type} className="flex items-center gap-2 cursor-pointer group">
+                                        <input
+                                            type="radio"
+                                            name="wineType"
+                                            checked={selectedType === type}
+                                            onChange={() => setSelectedType(type)}
+                                            className="h-4 w-4 accent-burgundy"
+                                        />
+                                        <span className="text-sm text-warm-gray group-hover:text-charcoal transition-colors">
+                                            {type}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
                         </div>
+
+                        {/* Price Range */}
+                        <div className="rounded-xl border border-light-border bg-white p-5">
+                            <h3 className="font-serif text-sm font-semibold text-charcoal mb-3">Price Range</h3>
+                            <input
+                                type="range"
+                                min="0"
+                                max="1000000"
+                                step="10000"
+                                value={priceRange[1]}
+                                onChange={e => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                                className="w-full accent-burgundy"
+                            />
+                            <div className="mt-2 flex justify-between text-xs text-warm-gray">
+                                <span>{priceRange[0].toLocaleString('vi-VN')}₫</span>
+                                <span>{priceRange[1].toLocaleString('vi-VN')}₫</span>
+                            </div>
+                        </div>
+                    </aside>
+
+                    {/* Product Grid */}
+                    <div>
+                        {/* Sort bar */}
+                        <div className="mb-6 flex items-center justify-between">
+                            <p className="text-sm text-warm-gray">
+                                {filtered.length} wines found
+                            </p>
+                            <select className="rounded-lg border border-light-border bg-white px-3 py-2 text-sm text-charcoal focus:border-burgundy focus:outline-none">
+                                <option>Sort: Default</option>
+                                <option>Price: Low to High</option>
+                                <option>Price: High to Low</option>
+                                <option>Newest First</option>
+                            </select>
+                        </div>
+
+                        {loading ? (
+                            <SkeletonProductGrid count={9} />
+                        ) : paginatedProducts.length > 0 ? (
+                            <>
+                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                    {paginatedProducts.map(product => (
+                                        <ProductCard key={product.product_id} product={product} />
+                                    ))}
+                                </div>
+
+                                {/* Pagination */}
+                                {totalPages > 1 && (
+                                    <div className="mt-10 flex items-center justify-center gap-2">
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className="flex items-center gap-1 rounded-lg border border-light-border px-3 py-2 text-sm text-warm-gray hover:text-charcoal disabled:opacity-40"
+                                        >
+                                            <ChevronLeft className="h-4 w-4" /> Previous
+                                        </button>
+                                        {Array.from({ length: totalPages }).map((_, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setCurrentPage(i + 1)}
+                                                className={`h-9 w-9 rounded-lg text-sm font-medium transition-colors ${currentPage === i + 1
+                                                        ? 'bg-burgundy text-white'
+                                                        : 'border border-light-border text-warm-gray hover:text-charcoal'
+                                                    }`}
+                                            >
+                                                {i + 1}
+                                            </button>
+                                        ))}
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="flex items-center gap-1 rounded-lg border border-light-border px-3 py-2 text-sm text-warm-gray hover:text-charcoal disabled:opacity-40"
+                                        >
+                                            Next <ChevronRight className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="rounded-2xl border border-light-border bg-white py-20 text-center">
+                                <span className="text-5xl block mb-4">🔍</span>
+                                <p className="font-serif text-xl text-charcoal">No wines found</p>
+                                <p className="mt-2 text-sm text-warm-gray">Try adjusting your search or filters</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ProductsPage() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-cream p-8"><SkeletonProductGrid count={9} /></div>}>
+            <ProductsContent />
+        </Suspense>
     );
 }
