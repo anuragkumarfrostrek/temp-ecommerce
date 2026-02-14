@@ -16,7 +16,7 @@ export default function AboutPage() {
                 <div className="relative mx-auto max-w-4xl px-4 py-28 lg:py-40 text-center">
                     <p className="text-sm uppercase tracking-[0.3em] text-wine-gold-light font-medium mb-4">Our Story</p>
                     <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
-                        Nghệ Thuật <span className="text-wine-gold">Rượu Vang</span>
+                        The Art of <span className="text-wine-gold">Fine Wine</span>
                     </h1>
                     <p className="mt-6 text-base sm:text-lg text-cream-dark/90 max-w-2xl mx-auto leading-relaxed">
                         From the lush highlands of Vietnam to your glass, every bottle tells a story of passion, heritage, and an unwavering commitment to excellence.
@@ -30,16 +30,17 @@ export default function AboutPage() {
                     <div>
                         <p className="text-sm uppercase tracking-[0.2em] text-wine-gold font-medium mb-3">Our Mission</p>
                         <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal leading-tight">
-                            Đưa Rượu Vang Việt Lên Bản Đồ Thế Giới
+                            Putting Fine Wine on the World Map
                         </h2>
                         <p className="mt-6 text-warm-gray leading-relaxed">
-                            Thành lập năm 2015, KSP Wines bắt đầu từ một ước mơ đơn giản: tạo ra những chai rượu vang mang đậm bản sắc Việt Nam
-                            nhưng đạt tiêu chuẩn quốc tế. Chúng tôi đã đi khắp các vùng đất từ Đà Lạt đến Ninh Thuận, tìm kiếm những giống nho
-                            phù hợp nhất với khí hậu nhiệt đới.
+                            Founded in 2015, KSP Wines began with a simple dream: to create wines with
+                            distinctive character that meet international standards of excellence. We have
+                            explored vineyards across the globe, seeking the finest grape varieties suited
+                            to each unique terroir.
                         </p>
                         <p className="mt-4 text-warm-gray leading-relaxed">
-                            Qua hơn một thập kỷ, chúng tôi đã chứng minh rằng Việt Nam hoàn toàn có thể sản xuất những chai rượu vang
-                            đẳng cấp, được công nhận bởi các chuyên gia hàng đầu thế giới.
+                            Over more than a decade, we have proven that exceptional winemaking knows no
+                            borders — earning recognition from the world’s leading wine experts and critics.
                         </p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -63,7 +64,7 @@ export default function AboutPage() {
             <section className="py-20 px-4 bg-white">
                 <div className="mx-auto max-w-4xl">
                     <div className="text-center mb-16">
-                        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">Hành Trình Của Chúng Tôi</h2>
+                        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">Our Journey</h2>
                         <p className="mt-3 text-warm-gray">Our journey through the years</p>
                     </div>
 
@@ -97,16 +98,16 @@ export default function AboutPage() {
             <section className="py-20 px-4">
                 <div className="mx-auto max-w-7xl">
                     <div className="text-center mb-12">
-                        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">Đội Ngũ Của Chúng Tôi</h2>
+                        <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">Our Team</h2>
                         <p className="mt-3 text-warm-gray">The passionate people behind every bottle</p>
                     </div>
 
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                         {[
-                            { name: 'Nguyễn Văn Minh', role: 'Founder & CEO', emoji: '👨‍💼' },
-                            { name: 'Trần Thị Hoa', role: 'Head Winemaker', emoji: '👩‍🔬' },
-                            { name: 'Lê Hoàng Nam', role: 'Vineyard Director', emoji: '👨‍🌾' },
-                            { name: 'Phạm Thu Hà', role: 'Brand Director', emoji: '👩‍💻' },
+                            { name: 'Michael Chen', role: 'Founder & CEO', emoji: '👨‍💼' },
+                            { name: 'Claire Dubois', role: 'Head Winemaker', emoji: '👩‍🔬' },
+                            { name: 'David Laurent', role: 'Vineyard Director', emoji: '👨‍🌾' },
+                            { name: 'Sarah Park', role: 'Brand Director', emoji: '👩‍💻' },
                         ].map((member, i) => (
                             <div key={i} className="rounded-2xl border border-light-border bg-white p-6 text-center transition-all hover:shadow-md hover:-translate-y-1">
                                 <div className="mx-auto mb-4 h-24 w-24 rounded-full bg-cream-dark flex items-center justify-center text-5xl">
@@ -123,8 +124,8 @@ export default function AboutPage() {
             {/* CTA */}
             <section className="py-20 px-4 wine-gradient">
                 <div className="mx-auto max-w-2xl text-center">
-                    <h2 className="font-serif text-3xl font-bold text-white">Trải Nghiệm Rượu Vang Việt</h2>
-                    <p className="mt-3 text-cream-dark/80 text-sm">Discover our curated collection and experience the taste of Vietnam</p>
+                    <h2 className="font-serif text-3xl font-bold text-white">Experience Premium Wines</h2>
+                    <p className="mt-3 text-cream-dark/80 text-sm">Discover our curated collection and experience wines crafted to perfection</p>
                     <Link
                         href="/products"
                         className="mt-6 inline-flex items-center gap-2 rounded-lg bg-wine-gold px-8 py-3.5 text-sm font-semibold text-charcoal hover:bg-wine-gold-light transition-colors"

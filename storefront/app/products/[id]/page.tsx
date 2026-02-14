@@ -151,7 +151,7 @@ export default function ProductDetailPage({ params }: Props) {
                         )}
 
                         <p className="font-serif text-3xl font-bold text-burgundy">
-                            {displayPrice.toLocaleString('vi-VN')}₫
+                            ${displayPrice.toLocaleString('en-US')}
                         </p>
 
                         {product.description && (
@@ -226,7 +226,7 @@ export default function ProductDetailPage({ params }: Props) {
                         <div className="grid grid-cols-2 gap-3">
                             <div className="flex items-center gap-2 rounded-lg bg-cream-dark/50 p-3">
                                 <Truck className="h-4 w-4 text-burgundy" />
-                                <span className="text-xs text-warm-gray">Free shipping over 500k₫</span>
+                                <span className="text-xs text-warm-gray">Free shipping over $50</span>
                             </div>
                             <div className="flex items-center gap-2 rounded-lg bg-cream-dark/50 p-3">
                                 <RotateCcw className="h-4 w-4 text-burgundy" />
@@ -272,9 +272,9 @@ export default function ProductDetailPage({ params }: Props) {
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {[
-                            { name: 'Cao Minh Anh', date: '14/01/2026', text: 'Tuyệt vời! Hương vị đậm đà, mùi vị vô cùng cân bằng. Chắc chắn sẽ mua lại!' },
-                            { name: 'Nguyễn Văn Hùng', date: '12/01/2026', text: 'Rất dễ chịu, giá nhập khá hợp mức thị trường. Đóng hàng cẩn thận và đúng giao đúng hẹn.' },
-                            { name: 'Phạm Thị Lan', date: '10/01/2026', text: 'Dạng vang này thích hợp với các bữa tiệc. Chất lượng đẹp và rất dễ thưởng thức.' },
+                            { name: 'Emily Carter', date: '01/14/2026', text: 'Absolutely wonderful! Rich, well-balanced flavor with beautiful complexity. Will definitely order again!' },
+                            { name: 'James Whitfield', date: '01/12/2026', text: 'Very pleasant wine at a great value. Carefully packaged and delivered right on schedule.' },
+                            { name: 'Sofia Martínez', date: '01/10/2026', text: 'This wine is perfect for celebrations and dinner parties. Excellent quality and incredibly easy to enjoy.' },
                         ].map((review, i) => (
                             <div key={i} className="rounded-xl border border-light-border bg-white p-5">
                                 <div className="flex items-center justify-between mb-2">

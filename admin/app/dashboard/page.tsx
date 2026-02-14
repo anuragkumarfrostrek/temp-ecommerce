@@ -1,19 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getProducts, getMockOrders, getMockCategories, Product } from '@/lib/api';
+import { getProducts, getOrders, getCategories, Product, Order, Category } from '@/lib/api';
 import Link from 'next/link';
 import { Package, ShoppingCart, Tag, TrendingUp, Plus, ArrowUpRight } from 'lucide-react';
 
 export default function DashboardPage() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
-    const orders = getMockOrders();
-    const categories = getMockCategories();
 
     useEffect(() => {
-        getProducts().then(data => {
-            setProducts(data);
+        Promise.all([getProducts(), getOrders(), getCategories()]).then(([prods, ords, cats]) => {
+            setProducts(prods);
+            setOrders(ords);
+            setCategories(cats);
             setLoading(false);
         });
     }, []);
@@ -22,7 +24,7 @@ export default function DashboardPage() {
         { label: 'Total Products', value: loading ? '—' : products.length, icon: Package, color: 'bg-blue-50 text-blue-600', href: '/dashboard/products' },
         { label: 'Total Orders', value: orders.length, icon: ShoppingCart, color: 'bg-green-50 text-green-600', href: '/dashboard/orders' },
         { label: 'Categories', value: categories.length, icon: Tag, color: 'bg-purple-50 text-purple-600', href: '/dashboard/categories' },
-        { label: 'Revenue', value: `₫${(orders.reduce((s, o) => s + o.total, 0) / 1000000).toFixed(1)}M`, icon: TrendingUp, color: 'bg-amber-50 text-amber-600', href: '/dashboard/orders' },
+        { label: 'Revenue', value: `$${orders.reduce((s, o) => s + o.total, 0).toLocaleString('en-US')}`, icon: TrendingUp, color: 'bg-amber-50 text-amber-600', href: '/dashboard/orders' },
     ];
 
     return (
@@ -77,12 +79,12 @@ export default function DashboardPage() {
                                     <p className="text-xs text-text-secondary">{order.id}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-sm font-semibold text-text-primary">{order.total.toLocaleString('vi-VN')}₫</p>
+                                    <p className="text-sm font-semibold text-text-primary">${order.total.toLocaleString('en-US')}</p>
                                     <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${order.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                            order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
-                                                order.status === 'delivered' ? 'bg-purple-100 text-purple-700' :
-                                                    order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                        'bg-red-100 text-red-700'
+                                        order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                                            order.status === 'delivered' ? 'bg-purple-100 text-purple-700' :
+                                                order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                                    'bg-red-100 text-red-700'
                                         }`}>
                                         {order.status}
                                     </span>
@@ -111,7 +113,7 @@ export default function DashboardPage() {
                                     <p className="text-xs text-text-secondary">{product.sku}</p>
                                 </div>
                                 <p className="text-sm font-semibold text-text-primary">
-                                    {(product.price ?? 0).toLocaleString('vi-VN')}₫
+                                    ${(product.price ?? 0).toLocaleString('en-US')}
                                 </p>
                             </div>
                         ))}

@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'ecommerce-backend-h23p.onrender.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
 };

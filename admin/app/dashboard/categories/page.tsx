@@ -1,32 +1,45 @@
 'use client';
 
-import { useState } from 'react';
-import { getMockCategories, Category } from '@/lib/api';
+import { useState, useEffect } from 'react';
+import { getCategories, createCategory, updateCategory, deleteCategory, Category } from '@/lib/api';
 import { Plus, Pencil, Trash2, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CategoriesPage() {
-    const [categories, setCategories] = useState<Category[]>(getMockCategories());
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editId, setEditId] = useState<string | null>(null);
     const [form, setForm] = useState({ name: '', description: '' });
 
-    const handleSave = () => {
+    const loadCategories = async () => {
+        const cats = await getCategories();
+        setCategories(cats);
+        setLoading(false);
+    };
+
+    useEffect(() => { loadCategories(); }, []);
+
+    const handleSave = async () => {
         if (!form.name) { toast.error('Name is required'); return; }
 
         if (editId) {
-            setCategories(prev => prev.map(c =>
-                c.id === editId ? { ...c, name: form.name, description: form.description } : c
-            ));
-            toast.success('Category updated');
+            const result = await updateCategory(editId, { name: form.name, description: form.description });
+            if (result.success) {
+                toast.success('Category updated');
+                loadCategories();
+            } else {
+                toast.error(result.error || 'Failed to update');
+            }
         } else {
-            setCategories(prev => [...prev, {
-                id: `cat-${Date.now()}`,
-                name: form.name,
-                description: form.description,
-                product_count: 0,
-            }]);
-            toast.success('Category added');
+            const slug = form.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            const result = await createCategory({ name: form.name, slug, description: form.description });
+            if (result.success) {
+                toast.success('Category added');
+                loadCategories();
+            } else {
+                toast.error(result.error || 'Failed to create');
+            }
         }
 
         setForm({ name: '', description: '' });
@@ -40,10 +53,15 @@ export default function CategoriesPage() {
         setShowForm(true);
     };
 
-    const handleDelete = (id: string, name: string) => {
+    const handleDelete = async (id: string, name: string) => {
         if (!confirm(`Delete "${name}"?`)) return;
-        setCategories(prev => prev.filter(c => c.id !== id));
-        toast.success('Category deleted');
+        const success = await deleteCategory(id);
+        if (success) {
+            toast.success('Category deleted');
+            loadCategories();
+        } else {
+            toast.error('Failed to delete');
+        }
     };
 
     return (
@@ -103,30 +121,35 @@ export default function CategoriesPage() {
             )}
 
             {/* Categories Grid */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {categories.map(cat => (
-                    <div key={cat.id} className="rounded-xl border border-border bg-card-bg p-5 transition-all hover:shadow-md">
-                        <div className="flex items-start justify-between mb-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                                <Tag className="h-5 w-5 text-primary" />
+            {loading ? (
+                <p className="text-sm text-text-secondary">Loading categories...</p>
+            ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {categories.map(cat => (
+                        <div key={cat.id} className="rounded-xl border border-border bg-card-bg p-5 transition-all hover:shadow-md">
+                            <div className="flex items-start justify-between mb-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                                    <Tag className="h-5 w-5 text-primary" />
+                                </div>
+                                <div className="flex gap-1">
+                                    <button onClick={() => handleEdit(cat)}
+                                        className="rounded-lg p-1.5 text-text-muted hover:text-info hover:bg-blue-50 transition-colors">
+                                        <Pencil className="h-3.5 w-3.5" />
+                                    </button>
+                                    <button onClick={() => handleDelete(cat.id, cat.name)}
+                                        className="rounded-lg p-1.5 text-text-muted hover:text-danger hover:bg-red-50 transition-colors">
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex gap-1">
-                                <button onClick={() => handleEdit(cat)}
-                                    className="rounded-lg p-1.5 text-text-muted hover:text-info hover:bg-blue-50 transition-colors">
-                                    <Pencil className="h-3.5 w-3.5" />
-                                </button>
-                                <button onClick={() => handleDelete(cat.id, cat.name)}
-                                    className="rounded-lg p-1.5 text-text-muted hover:text-danger hover:bg-red-50 transition-colors">
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                            </div>
+                            <h3 className="font-serif text-base font-semibold text-text-primary">{cat.name}</h3>
+                            <p className="mt-0.5 text-xs text-text-secondary">{cat.description}</p>
+                            <p className="mt-3 text-xs font-medium text-primary">{cat.product_count ?? 0} products</p>
                         </div>
-                        <h3 className="font-serif text-base font-semibold text-text-primary">{cat.name}</h3>
-                        <p className="mt-0.5 text-xs text-text-secondary">{cat.description}</p>
-                        <p className="mt-3 text-xs font-medium text-primary">{cat.product_count} products</p>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
+

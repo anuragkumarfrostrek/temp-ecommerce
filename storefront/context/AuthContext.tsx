@@ -10,6 +10,7 @@ interface AuthContextType {
     login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
     register: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
+    verifyUserAge: (dateOfBirth: string) => Promise<{ success: boolean; error?: string }>;
     orders: Order[];
     addOrder: (order: Order) => void;
     addresses: ShippingAddress[];
@@ -20,12 +21,24 @@ interface UserInfo {
     id: string;
     name: string;
     email: string;
+    is_age_verified?: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const USER_KEY = 'ksp_wines_user';
 const ORDERS_KEY = 'ksp_wines_orders';
 const ADDRESSES_KEY = 'ksp_wines_addresses';
+
+/** Map backend customer shape → frontend UserInfo */
+function toUserInfo(customer: Record<string, unknown>): UserInfo {
+    return {
+        id: (customer.customer_id ?? customer.id ?? '') as string,
+        name: (customer.full_name ?? customer.name ?? '') as string,
+        email: (customer.email ?? '') as string,
+        is_age_verified: !!(customer.is_age_verified),
+    };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<UserInfo | null>(null);
@@ -45,35 +58,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
     }, []);
 
-    /* Since backend has no auth endpoints, simulate login/register locally */
     const login = useCallback(async (email: string, password: string) => {
-        /* Attempt real API first, fallback to mock */
         try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
             const res = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ email, password }),
             });
-            if (res.ok) {
-                const json = await res.json();
-                if (json.data?.user) {
-                    setUser(json.data.user);
-                    localStorage.setItem(USER_KEY, JSON.stringify(json.data.user));
-                    return { success: true };
-                }
+            const json = await res.json();
+            if (res.ok && json.success && json.data?.customer) {
+                const u = toUserInfo(json.data.customer);
+                setUser(u);
+                localStorage.setItem(USER_KEY, JSON.stringify(u));
+                return { success: true };
             }
+            // Return backend error message if available
+            if (json.message) return { success: false, error: json.message };
         } catch {
-            /* Backend auth not available, use mock */
+            /* Backend not available, fall through to mock */
         }
 
-        // Mock login
+        // Mock login fallback
         if (password.length >= 3) {
-            const mockUser: UserInfo = {
-                id: `user-${Date.now()}`,
-                name: email.split('@')[0],
-                email,
-            };
+            const mockUser: UserInfo = { id: `user-${Date.now()}`, name: email.split('@')[0], email, is_age_verified: true };
             setUser(mockUser);
             localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
             return { success: true };
@@ -83,24 +91,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const register = useCallback(async (name: string, email: string, password: string) => {
         try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
             const res = await fetch(`${API_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password }),
+                credentials: 'include',
+                body: JSON.stringify({ full_name: name, email, password }),
             });
-            if (res.ok) {
-                const json = await res.json();
-                if (json.data?.user) {
-                    setUser(json.data.user);
-                    localStorage.setItem(USER_KEY, JSON.stringify(json.data.user));
-                    return { success: true };
-                }
+            const json = await res.json();
+            if (res.ok && json.success && json.data?.customer) {
+                const u = toUserInfo(json.data.customer);
+                setUser(u);
+                localStorage.setItem(USER_KEY, JSON.stringify(u));
+                return { success: true };
             }
+            if (json.message) return { success: false, error: json.message };
         } catch { /* fallback to mock */ }
 
         if (name && email && password.length >= 3) {
-            const mockUser: UserInfo = { id: `user-${Date.now()}`, name, email };
+            const mockUser: UserInfo = { id: `user-${Date.now()}`, name, email, is_age_verified: true };
             setUser(mockUser);
             localStorage.setItem(USER_KEY, JSON.stringify(mockUser));
             return { success: true };
@@ -109,9 +117,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const logout = useCallback(() => {
+        // Call backend logout to clear HttpOnly cookies
+        fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => { });
         setUser(null);
         localStorage.removeItem(USER_KEY);
     }, []);
+
+    const verifyUserAge = useCallback(async (dateOfBirth: string) => {
+        if (!user?.id) return { success: false, error: "User not logged in" };
+        try {
+            const res = await fetch(`${API_URL}/api/customers/${user.id}/verify-age`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date_of_birth: dateOfBirth }),
+            });
+            const json = await res.json();
+            if (res.ok && json.success) {
+                const updatedUser = { ...user, is_age_verified: true };
+                setUser(updatedUser);
+                localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+                return { success: true };
+            }
+            return { success: false, error: json.message || "Verification failed" };
+        } catch (err) {
+            return { success: false, error: "Network error during verification" };
+        }
+    }, [user]);
 
     const addOrder = useCallback((order: Order) => {
         setOrders(prev => {
@@ -131,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return (
         <AuthContext.Provider value={{
-            user, isAuthenticated: !!user, isLoading, login, register, logout,
+            user, isAuthenticated: !!user, isLoading, login, register, logout, verifyUserAge,
             orders, addOrder, addresses, addAddress,
         }}>
             {children}

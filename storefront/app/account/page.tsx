@@ -6,7 +6,7 @@ import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
 import ProductCard from '@/components/ProductCard';
 import { Package, MapPin, Heart, LogOut, User } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 type Tab = 'orders' | 'wishlist' | 'addresses' | 'profile';
@@ -17,6 +17,12 @@ export default function AccountPage() {
     const { items: wishlistItems } = useWishlist();
     const [activeTab, setActiveTab] = useState<Tab>('orders');
 
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            router.push('/login');
+        }
+    }, [isLoading, isAuthenticated, router]);
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-cream flex items-center justify-center">
@@ -26,7 +32,6 @@ export default function AccountPage() {
     }
 
     if (!isAuthenticated) {
-        router.push('/login');
         return null;
     }
 
@@ -65,8 +70,8 @@ export default function AccountPage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-5 py-3 text-sm font-medium transition-colors ${activeTab === tab.id
-                                    ? 'border-burgundy text-burgundy'
-                                    : 'border-transparent text-warm-gray hover:text-charcoal'
+                                ? 'border-burgundy text-burgundy'
+                                : 'border-transparent text-warm-gray hover:text-charcoal'
                                 }`}
                         >
                             <tab.icon className="h-4 w-4" />
@@ -96,12 +101,12 @@ export default function AccountPage() {
                                         <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                                             <div>
                                                 <p className="font-mono text-sm font-semibold text-charcoal">{order.id}</p>
-                                                <p className="text-xs text-warm-gray">{new Date(order.created_at).toLocaleDateString('vi-VN')}</p>
+                                                <p className="text-xs text-warm-gray">{new Date(order.created_at).toLocaleDateString('en-US')}</p>
                                             </div>
                                             <span className={`rounded-full px-3 py-1 text-xs font-semibold ${order.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                                    order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
-                                                        order.status === 'delivered' ? 'bg-purple-100 text-purple-700' :
-                                                            'bg-yellow-100 text-yellow-700'
+                                                order.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                                                    order.status === 'delivered' ? 'bg-purple-100 text-purple-700' :
+                                                        'bg-yellow-100 text-yellow-700'
                                                 }`}>
                                                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                             </span>
@@ -110,13 +115,13 @@ export default function AccountPage() {
                                             {order.items.map((item, i) => (
                                                 <div key={i} className="flex items-center justify-between text-sm">
                                                     <span className="text-charcoal">{item.product.product_name} × {item.quantity}</span>
-                                                    <span className="text-warm-gray">{((item.product.price || 350000) * item.quantity).toLocaleString('vi-VN')}₫</span>
+                                                    <span className="text-warm-gray">${((item.product.price || 35) * item.quantity).toLocaleString('en-US')}</span>
                                                 </div>
                                             ))}
                                         </div>
                                         <div className="mt-3 border-t border-light-border pt-3 flex justify-between">
                                             <span className="font-serif text-sm font-semibold text-burgundy">Total</span>
-                                            <span className="font-serif text-sm font-bold text-burgundy">{order.total.toLocaleString('vi-VN')}₫</span>
+                                            <span className="font-serif text-sm font-bold text-burgundy">${order.total.toLocaleString('en-US')}</span>
                                         </div>
                                     </div>
                                 ))}

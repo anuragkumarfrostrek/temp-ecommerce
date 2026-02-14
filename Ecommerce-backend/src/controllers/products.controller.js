@@ -4,13 +4,19 @@ const asyncHandler = require('../middlewares/asyncHandler');
 
 /* GET /api/products */
 const getAllProducts = asyncHandler(async (req, res) => {
-    const { limit = 100, offset = 0, category } = req.query;
+    const { limit = 100, offset = 0, category, status, brand, sort } = req.query;
 
     let products;
     if (category) {
         products = await productsRepository.findByCategory(category, parseInt(limit));
     } else {
-        products = await productsRepository.findAll({ limit: parseInt(limit), offset: parseInt(offset) });
+        products = await productsRepository.findAllFiltered({
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            status,
+            brand,
+            sort,
+        });
     }
 
     sendSuccess(res, products, 'Products retrieved successfully');
@@ -52,7 +58,7 @@ const searchProducts = asyncHandler(async (req, res) => {
 
 /* POST /api/products */
 const createProduct = asyncHandler(async (req, res) => {
-    const { sku, product_name, brand, category, sub_category, description, unit_of_measure, intended_use } = req.body;
+    const { sku, product_name, brand, category, sub_category, description, unit_of_measure, intended_use, price } = req.body;
 
     if (!sku || !product_name) {
         const error = new Error('SKU and product_name are required');
@@ -69,6 +75,7 @@ const createProduct = asyncHandler(async (req, res) => {
         description,
         unit_of_measure,
         intended_use,
+        price,
     });
 
     sendCreated(res, newProduct, 'Product created successfully');
@@ -76,7 +83,7 @@ const createProduct = asyncHandler(async (req, res) => {
 
 /* PATCH /api/products/:id */
 const updateProduct = asyncHandler(async (req, res) => {
-    const { sku, product_name, brand, category, sub_category, description, unit_of_measure, intended_use } = req.body;
+    const { sku, product_name, brand, category, sub_category, description, unit_of_measure, intended_use, price } = req.body;
 
     // Build update object with only provided fields
     const updateData = {};
@@ -88,6 +95,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     if (description !== undefined) updateData.description = description;
     if (unit_of_measure !== undefined) updateData.unit_of_measure = unit_of_measure;
     if (intended_use !== undefined) updateData.intended_use = intended_use;
+    if (price !== undefined) updateData.price = price;
 
     const updatedProduct = await productsRepository.update(req.params.id, updateData);
 
@@ -135,7 +143,7 @@ const duplicateProduct = asyncHandler(async (req, res) => {
     sendCreated(res, newProduct, 'Product duplicated successfully');
 });
 
-/* PATCH /api/products/:id/stock */
+/* PATCH /api/products/:id/stock  */
 const updateStock = asyncHandler(async (req, res) => {
     const { quantity } = req.body;
     if (quantity === undefined || quantity < 0) {

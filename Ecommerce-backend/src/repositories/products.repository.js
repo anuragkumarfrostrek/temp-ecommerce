@@ -35,6 +35,46 @@ class ProductsRepository extends BaseRepository {
         return result.rows;
     }
 
+    /* Find all with filters (status, brand, sort) */
+    async findAllFiltered({ limit = 100, offset = 0, status, brand, sort } = {}) {
+        const conditions = [];
+        const params = [];
+        let idx = 1;
+
+        if (status) {
+            conditions.push(`status = $${idx++}`);
+            params.push(status);
+        }
+        if (brand) {
+            conditions.push(`brand ILIKE $${idx++}`);
+            params.push(`%${brand}%`);
+        }
+
+        const whereClause = conditions.length > 0
+            ? 'WHERE ' + conditions.join(' AND ')
+            : '';
+
+        const validSorts = {
+            'newest': 'created_at DESC',
+            'oldest': 'created_at ASC',
+            'name_asc': 'product_name ASC',
+            'name_desc': 'product_name DESC',
+            'price_asc': 'price ASC NULLS LAST',
+            'price_desc': 'price DESC NULLS LAST',
+        };
+        const orderClause = validSorts[sort] || 'created_at DESC';
+
+        params.push(limit, offset);
+
+        const result = await query(
+            `SELECT * FROM inventory.products ${whereClause}
+             ORDER BY ${orderClause}
+             LIMIT $${idx++} OFFSET $${idx}`,
+            params
+        );
+        return result.rows;
+    }
+
     /*Get product with all related data (specifications, packaging, etc.) */
     async findByIdWithDetails(productId) {
         const product = await this.findById(productId);
@@ -115,7 +155,7 @@ class ProductsRepository extends BaseRepository {
     /* Update stock quantity */
     async updateStock(id, quantity) {
         const result = await query(
-            'UPDATE inventory.product_variants SET quantity = $1, updated_at = NOW() WHERE product_id = $2 RETURNING *',
+            'UPDATE inventory.product_variants SET stock_quantity = $1, updated_at = NOW() WHERE product_id = $2 RETURNING *',
             [quantity, id]
         );
         // Also update main product if needed (depending on schema design, keeping simple for now)
@@ -124,8 +164,21 @@ class ProductsRepository extends BaseRepository {
 
     /* Get low stock products */
     async findLowStock(threshold = 10) {
-        // Placeholder for low stock logic
-        return [];
+        const result = await query(
+            `SELECT 
+                pv.variant_id, 
+                pv.product_id, 
+                pv.variant_sku, 
+                pv.stock_quantity, 
+                p.product_name, 
+                pv.variant_name
+             FROM inventory.product_variants pv
+             JOIN inventory.products p ON pv.product_id = p.product_id
+             WHERE pv.stock_quantity <= $1
+             ORDER BY pv.stock_quantity ASC`,
+            [threshold]
+        );
+        return result.rows;
     }
 }
 

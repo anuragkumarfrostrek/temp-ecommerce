@@ -1,44 +1,103 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { directCheckout } from '@/lib/api';
 import { Order, ShippingAddress } from '@/types';
 import { CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import AgeVerificationModal from '@/components/AgeVerificationModal';
 
 export default function CheckoutPage() {
     const router = useRouter();
     const { items, totalPrice, clearCart } = useCart();
-    const { isAuthenticated, addOrder, addAddress } = useAuth();
+    const { user, isAuthenticated, addOrder, addAddress } = useAuth();
     const [step, setStep] = useState(1); // 1: Address, 2: Payment, 3: Confirmation
     const [orderPlaced, setOrderPlaced] = useState(false);
+    const [placing, setPlacing] = useState(false);
+    const [ageModalOpen, setAgeModalOpen] = useState(false);
     const [address, setAddress] = useState<ShippingAddress>({
         full_name: '',
         address_line: '',
         city: '',
         state: '',
         zip_code: '',
-        country: 'Vietnam',
+        country: 'US',
         phone: '',
     });
 
-    const shippingCost = totalPrice > 500000 ? 0 : 50000;
+    const shippingCost = totalPrice > 50 ? 0 : 5;
     const grandTotal = totalPrice + shippingCost;
 
+    useEffect(() => {
+        if (items.length === 0 && !orderPlaced) {
+            router.push('/cart');
+        }
+    }, [items.length, orderPlaced, router]);
+
     if (items.length === 0 && !orderPlaced) {
-        router.push('/cart');
         return null;
     }
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = async () => {
         if (!address.full_name || !address.address_line || !address.city || !address.phone) {
             toast.error('Please fill in all required fields');
             return;
         }
 
+        if (user && !user.is_age_verified) {
+            setAgeModalOpen(true);
+            return;
+        }
+
+        setPlacing(true);
+
+        // Build items array for backend API
+        const orderItems = items.map(item => ({
+            product_id: item.product.product_id,
+            quantity: item.quantity,
+            unit_price: item.product.price || 0,
+        }));
+
+        // Try backend direct checkout first
+        try {
+            const result = await directCheckout({
+                customer_id: user?.id || undefined,
+                customer_name: user?.name || address.full_name,
+                customer_email: user?.email || undefined,
+                items: orderItems,
+                shipping_address: address as unknown as Record<string, string>,
+                payment_method: 'cod',
+            });
+
+            if (result.success) {
+                // Also save to localStorage for account page
+                const order: Order = {
+                    id: result.data?.order_id || `ORD-${Date.now()}`,
+                    items: [...items],
+                    total: grandTotal,
+                    status: 'confirmed',
+                    shipping_address: address,
+                    created_at: new Date().toISOString(),
+                };
+                addOrder(order);
+                addAddress(address);
+                clearCart();
+                setOrderPlaced(true);
+                setStep(3);
+                toast.success('Order placed successfully!');
+                setPlacing(false);
+                return;
+            }
+        } catch (error) {
+            console.error('Direct checkout failed:', error);
+            /* Backend unavailable — fall through to localStorage-only */
+        }
+
+        // Fallback: localStorage-only order
         const order: Order = {
             id: `ORD-${Date.now()}`,
             items: [...items],
@@ -54,6 +113,7 @@ export default function CheckoutPage() {
         setOrderPlaced(true);
         setStep(3);
         toast.success('Order placed successfully!');
+        setPlacing(false);
     };
 
     // Order Confirmation
@@ -199,10 +259,10 @@ export default function CheckoutPage() {
 
                             {/* Order Summary */}
                             <div className="border-t border-light-border pt-4 space-y-2 text-sm">
-                                <div className="flex justify-between"><span className="text-warm-gray">Subtotal ({items.length} items)</span><span>{totalPrice.toLocaleString('vi-VN')}₫</span></div>
-                                <div className="flex justify-between"><span className="text-warm-gray">Shipping</span><span>{shippingCost === 0 ? 'Free' : `${shippingCost.toLocaleString('vi-VN')}₫`}</span></div>
+                                <div className="flex justify-between"><span className="text-warm-gray">Subtotal ({items.length} items)</span><span>${totalPrice.toLocaleString('en-US')}</span></div>
+                                <div className="flex justify-between"><span className="text-warm-gray">Shipping</span><span>{shippingCost === 0 ? 'Free' : `$${shippingCost.toLocaleString('en-US')}`}</span></div>
                                 <div className="flex justify-between font-serif text-lg font-bold text-burgundy pt-2 border-t border-light-border mt-2">
-                                    <span>Total</span><span>{grandTotal.toLocaleString('vi-VN')}₫</span>
+                                    <span>Total</span><span>${grandTotal.toLocaleString('en-US')}</span>
                                 </div>
                             </div>
 
@@ -215,15 +275,25 @@ export default function CheckoutPage() {
                                 </button>
                                 <button
                                     onClick={handlePlaceOrder}
-                                    className="flex-1 rounded-lg bg-burgundy py-3 text-sm font-semibold text-white hover:bg-burgundy-dark transition-colors"
+                                    disabled={placing}
+                                    className="flex-1 rounded-lg bg-burgundy py-3 text-sm font-semibold text-white hover:bg-burgundy-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
-                                    Place Order — {grandTotal.toLocaleString('vi-VN')}₫
+                                    {placing ? 'Placing Order...' : `Place Order — $${grandTotal.toLocaleString('en-US')}`}
                                 </button>
                             </div>
                         </div>
                     </div>
                 )}
             </div>
+
+            <AgeVerificationModal
+                isOpen={ageModalOpen}
+                onClose={() => setAgeModalOpen(false)}
+                onVerified={() => {
+                    setAgeModalOpen(false);
+                    handlePlaceOrder();
+                }}
+            />
         </div>
     );
 }

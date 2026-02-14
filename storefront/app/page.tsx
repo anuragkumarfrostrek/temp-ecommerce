@@ -32,16 +32,16 @@ export default function HomePage() {
         />
         <div className="relative mx-auto max-w-7xl px-4 py-28 sm:py-36 lg:py-44 text-center">
           <p className="animate-fade-in text-sm uppercase tracking-[0.3em] text-wine-gold-light font-medium mb-4">
-            Premium Vietnamese Wines
+            Premium Artisan Wines
           </p>
           <h1 className="animate-fade-in-up font-serif text-4xl sm:text-5xl lg:text-7xl font-bold text-white leading-tight">
-            Tinh Hoa Rượu Vang<br />
-            <span className="text-wine-gold">Việt Nam</span>
+            The Art of Fine Wine,<br />
+            <span className="text-wine-gold">Perfected</span>
           </h1>
           <p className="animate-fade-in-up mt-6 mx-auto max-w-2xl text-base sm:text-lg text-cream-dark/90 leading-relaxed"
             style={{ animationDelay: '0.2s' }}>
-            Khám phá hương vị truyền thống Việt Nam, được đóng gói với niềm đam mê
-            và kỹ thuật tinh tế từ những vùng đất trù phú nhất.
+            Discover exceptional wines crafted with passion and refined technique
+            from the finest vineyards around the world.
           </p>
           <div className="animate-fade-in-up mt-8 flex flex-wrap justify-center gap-4" style={{ animationDelay: '0.4s' }}>
             <Link
@@ -66,7 +66,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-12">
             <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">
-              Bộ Sưu Tập Nổi Bật
+              Featured Collections
             </h2>
             <p className="mt-3 text-warm-gray">Discover our finest curated collections</p>
           </div>
@@ -106,17 +106,17 @@ export default function HomePage() {
             <div>
               <p className="text-sm uppercase tracking-[0.2em] text-wine-gold font-medium mb-3">Our Heritage</p>
               <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal leading-tight">
-                Câu Chuyện Của Chúng Tôi
+                Our Story
               </h2>
               <p className="mt-6 text-warm-gray leading-relaxed">
-                Tại VinoViet, chúng tôi tin rằng mỗi chai rượu vang là một câu chuyện. Từ những cánh đồng nho
-                trải dài trên cao nguyên Đà Lạt cho đến những khu vườn xanh mướt ở Ninh Thuận, chúng tôi tìm
-                kiếm và chọn lọc những nguyên liệu tốt nhất để tạo ra những sản phẩm đặc biệt.
+                At KSP Wines, we believe every bottle tells a story. From sun-drenched hillside
+                vineyards to lush coastal estates, we source and select only the finest grapes
+                to craft wines of exceptional character and depth.
               </p>
               <p className="mt-4 text-warm-gray leading-relaxed">
-                Với hơn một thập kỷ kinh nghiệm trong ngành rượu vang, đội ngũ nghệ nhân của chúng tôi kết hợp
-                kỹ thuật truyền thống châu Âu với hương vị độc đáo của Việt Nam, tạo nên những chai rượu không
-                chỉ là thức uống, mà còn là niềm tự hào dân tộc.
+                With over a decade of winemaking expertise, our artisans blend time-honored European
+                techniques with bold, modern innovation — producing wines that are not just beverages,
+                but experiences to be savored.
               </p>
               <Link
                 href="/about"
@@ -130,7 +130,7 @@ export default function HomePage() {
                 <div className="flex h-full items-center justify-center">
                   <div className="text-center p-8">
                     <span className="text-8xl block mb-4">🍇</span>
-                    <p className="font-serif text-2xl text-charcoal font-semibold">VinoViet</p>
+                    <p className="font-serif text-2xl text-charcoal font-semibold">KSP Wines</p>
                     <p className="text-sm text-warm-gray mt-1">Since 2015</p>
                   </div>
                 </div>
@@ -146,7 +146,7 @@ export default function HomePage() {
           <div className="flex items-end justify-between mb-12">
             <div>
               <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">
-                Sản Phẩm Bán Chạy Nhất
+                Best Sellers
               </h2>
               <p className="mt-2 text-warm-gray">Our most popular wines, loved by customers</p>
             </div>
@@ -186,7 +186,7 @@ export default function HomePage() {
       <section className="py-20 px-4 bg-white">
         <div className="mx-auto max-w-7xl text-center">
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal">
-            Giải Thưởng & Chứng Nhận
+            Awards & Certifications
           </h2>
           <p className="mt-3 text-warm-gray">Recognition of our commitment to quality</p>
 
@@ -213,28 +213,28 @@ export default function HomePage() {
       <section className="py-20 px-4">
         <div className="mx-auto max-w-7xl">
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal text-center">
-            Khách Hàng Nói Về Chúng Tôi
+            What Our Customers Say
           </h2>
-          <p className="mt-3 text-warm-gray text-center">What our customers say</p>
+          <p className="mt-3 text-warm-gray text-center">Hear from wine lovers who trust KSP Wines</p>
 
           <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
             {[
               {
-                name: 'Nguyễn Minh Anh',
+                name: 'Emily Carter',
                 role: 'Wine Enthusiast',
-                text: 'Rượu vang của VinoViet mang đến hương vị đặc biệt. Mỗi ngụm là một trải nghiệm mới mẻ và tinh tế.',
+                text: 'KSP Wines delivers an extraordinary tasting experience. Every sip reveals new layers of complexity and refinement.',
                 rating: 5,
               },
               {
-                name: 'Trần Văn Hùng',
+                name: 'James Whitfield',
                 role: 'Restaurant Owner',
-                text: 'Chất lượng ổn định, giá cả hợp lý. Tôi luôn chọn VinoViet cho nhà hàng của mình.',
+                text: 'Consistently outstanding quality at a fair price. KSP Wines is the go-to choice for my restaurant\'s wine list.',
                 rating: 5,
               },
               {
-                name: 'Phạm Thị Lan',
+                name: 'Sofia Martínez',
                 role: 'Sommelier',
-                text: 'Một viên ngọc ẩn của Việt Nam. Chất lượng đẳng cấp quốc tế với bản sắc Việt rõ nét.',
+                text: 'A hidden gem in the wine world. International-caliber quality with a distinctive character that stands apart.',
                 rating: 5,
               },
             ].map((testimonial, i) => (
@@ -270,15 +270,15 @@ export default function HomePage() {
         <div className="mx-auto max-w-2xl text-center">
           <Mail className="mx-auto h-8 w-8 text-wine-gold mb-4" />
           <h2 className="font-serif text-3xl font-bold text-white">
-            Đăng Ký Nhận Bản Tin
+            Join Our Newsletter
           </h2>
           <p className="mt-3 text-cream-dark/80 text-sm">
-            Nhận thông tin về sản phẩm mới và ưu đãi đặc biệt
+            Stay updated on new releases and exclusive offers
           </p>
           <form className="mt-8 flex flex-col sm:flex-row gap-3 justify-center" onSubmit={e => e.preventDefault()}>
             <input
               type="email"
-              placeholder="Email của bạn..."
+              placeholder="Your email address..."
               className="flex-1 rounded-lg bg-white/10 border border-white/20 px-5 py-3 text-sm text-white placeholder-white/50 focus:border-wine-gold focus:outline-none backdrop-blur-sm"
             />
             <button

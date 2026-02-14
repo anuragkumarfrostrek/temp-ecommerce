@@ -125,7 +125,7 @@ export default function ProductsListPage() {
                                             )}
                                         </td>
                                         <td className="px-4 py-3 text-sm font-medium text-text-primary">
-                                            {(product.price ?? 0).toLocaleString('vi-VN')}₫
+                                            ${(product.price ?? 0).toLocaleString('en-US')}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-text-secondary">
                                             {product.quantity ?? '—'}

@@ -1,16 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { getMockOrders, Order } from '@/lib/api';
+import { useState, useEffect } from 'react';
+import { getOrders, updateOrderStatus as apiUpdateStatus, Order } from '@/lib/api';
 import { ShoppingCart, Eye } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const statusOptions = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'] as const;
 
 export default function OrdersPage() {
-    const [orders, setOrders] = useState<Order[]>(getMockOrders());
+    const [orders, setOrders] = useState<Order[]>([]);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [filterStatus, setFilterStatus] = useState<string>('all');
+
+    useEffect(() => {
+        getOrders().then(setOrders);
+    }, []);
 
     const filtered = filterStatus === 'all' ? orders : orders.filter(o => o.status === filterStatus);
 
@@ -18,6 +22,7 @@ export default function OrdersPage() {
         setOrders(prev =>
             prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o)
         );
+        apiUpdateStatus(orderId, newStatus);
         toast.success(`Order ${orderId} updated to ${newStatus}`);
     };
 
@@ -83,10 +88,10 @@ export default function OrdersPage() {
                                             <p className="text-xs text-text-secondary">{order.customer_email}</p>
                                         </td>
                                         <td className="px-4 py-3 text-sm text-text-secondary">
-                                            {order.items.length} item{order.items.length > 1 ? 's' : ''}
+                                            {(order.items?.length ?? 0)} item{(order.items?.length ?? 0) > 1 ? 's' : ''}
                                         </td>
                                         <td className="px-4 py-3 text-sm font-semibold text-text-primary">
-                                            {order.total.toLocaleString('vi-VN')}₫
+                                            ${order.total.toLocaleString('en-US')}
                                         </td>
                                         <td className="px-4 py-3">
                                             <select
@@ -100,7 +105,7 @@ export default function OrdersPage() {
                                             </select>
                                         </td>
                                         <td className="px-4 py-3 text-sm text-text-secondary">
-                                            {new Date(order.created_at).toLocaleDateString('vi-VN')}
+                                            {new Date(order.created_at).toLocaleDateString('en-US')}
                                         </td>
                                         <td className="px-4 py-3 text-right">
                                             <button
@@ -131,17 +136,17 @@ export default function OrdersPage() {
                         <div className="space-y-3 text-sm">
                             <div className="flex justify-between"><span className="text-text-secondary">Customer</span><span className="text-text-primary font-medium">{selectedOrder.customer_name}</span></div>
                             <div className="flex justify-between"><span className="text-text-secondary">Email</span><span className="text-text-primary">{selectedOrder.customer_email}</span></div>
-                            <div className="flex justify-between"><span className="text-text-secondary">Date</span><span className="text-text-primary">{new Date(selectedOrder.created_at).toLocaleString('vi-VN')}</span></div>
+                            <div className="flex justify-between"><span className="text-text-secondary">Date</span><span className="text-text-primary">{new Date(selectedOrder.created_at).toLocaleString('en-US')}</span></div>
                             <div className="flex justify-between"><span className="text-text-secondary">Status</span><span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor(selectedOrder.status)}`}>{selectedOrder.status}</span></div>
                         </div>
 
                         <div className="mt-4 border-t border-border pt-4">
                             <h3 className="text-sm font-semibold text-text-primary mb-2">Items</h3>
                             <div className="space-y-2">
-                                {selectedOrder.items.map((item, i) => (
+                                {(selectedOrder.items ?? []).map((item, i) => (
                                     <div key={i} className="flex justify-between text-sm">
                                         <span className="text-text-secondary">{item.product_name} × {item.quantity}</span>
-                                        <span className="text-text-primary font-medium">{(item.price * item.quantity).toLocaleString('vi-VN')}₫</span>
+                                        <span className="text-text-primary font-medium">${(item.price * item.quantity).toLocaleString('en-US')}</span>
                                     </div>
                                 ))}
                             </div>
@@ -149,7 +154,7 @@ export default function OrdersPage() {
 
                         <div className="mt-4 border-t border-border pt-4 flex justify-between">
                             <span className="font-serif text-base font-bold text-primary">Total</span>
-                            <span className="font-serif text-base font-bold text-primary">{selectedOrder.total.toLocaleString('vi-VN')}₫</span>
+                            <span className="font-serif text-base font-bold text-primary">${selectedOrder.total.toLocaleString('en-US')}</span>
                         </div>
                     </div>
                 </div>

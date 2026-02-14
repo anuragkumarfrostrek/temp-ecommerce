@@ -147,8 +147,8 @@ function ProductsContent() {
                                 className="w-full accent-burgundy"
                             />
                             <div className="mt-2 flex justify-between text-xs text-warm-gray">
-                                <span>{priceRange[0].toLocaleString('vi-VN')}₫</span>
-                                <span>{priceRange[1].toLocaleString('vi-VN')}₫</span>
+                                <span>${priceRange[0].toLocaleString('en-US')}</span>
+                                <span>${priceRange[1].toLocaleString('en-US')}</span>
                             </div>
                         </div>
                     </aside>
@@ -193,8 +193,8 @@ function ProductsContent() {
                                                 key={i}
                                                 onClick={() => setCurrentPage(i + 1)}
                                                 className={`h-9 w-9 rounded-lg text-sm font-medium transition-colors ${currentPage === i + 1
-                                                        ? 'bg-burgundy text-white'
-                                                        : 'border border-light-border text-warm-gray hover:text-charcoal'
+                                                    ? 'bg-burgundy text-white'
+                                                    : 'border border-light-border text-warm-gray hover:text-charcoal'
                                                     }`}
                                             >
                                                 {i + 1}

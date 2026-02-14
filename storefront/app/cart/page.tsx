@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 export default function CartPage() {
     const { items, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
 
-    const shippingCost = totalPrice > 500000 ? 0 : 50000;
+    const shippingCost = totalPrice > 50 ? 0 : 5;
     const grandTotal = totalPrice + shippingCost;
 
     if (items.length === 0) {
@@ -75,7 +75,7 @@ export default function CartPage() {
                                             <p className="text-xs text-warm-gray mt-0.5">{item.product.brand}</p>
                                         )}
                                         <p className="mt-1 font-serif text-lg font-bold text-burgundy">
-                                            {price.toLocaleString('vi-VN')}₫
+                                            ${price.toLocaleString('en-US')}
                                         </p>
                                     </div>
 
@@ -125,7 +125,7 @@ export default function CartPage() {
                                                 <p className="text-charcoal font-medium truncate">{item.product.product_name}</p>
                                                 <p className="text-xs text-warm-gray">Qty: {item.quantity}</p>
                                             </div>
-                                            <p className="text-charcoal font-medium">{(price * item.quantity).toLocaleString('vi-VN')}₫</p>
+                                            <p className="text-charcoal font-medium">${(price * item.quantity).toLocaleString('en-US')}</p>
                                         </div>
                                     );
                                 })}
@@ -134,17 +134,17 @@ export default function CartPage() {
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
                                     <span className="text-warm-gray">Subtotal</span>
-                                    <span className="text-charcoal">{totalPrice.toLocaleString('vi-VN')}₫</span>
+                                    <span className="text-charcoal">${totalPrice.toLocaleString('en-US')}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-warm-gray">Shipping</span>
-                                    <span className="text-charcoal">{shippingCost === 0 ? 'Free' : `${shippingCost.toLocaleString('vi-VN')}₫`}</span>
+                                    <span className="text-charcoal">{shippingCost === 0 ? 'Free' : `$${shippingCost.toLocaleString('en-US')}`}</span>
                                 </div>
                             </div>
 
                             <div className="mt-4 border-t border-light-border pt-4 flex justify-between">
                                 <span className="font-serif text-lg font-bold text-burgundy">Total</span>
-                                <span className="font-serif text-lg font-bold text-burgundy">{grandTotal.toLocaleString('vi-VN')}₫</span>
+                                <span className="font-serif text-lg font-bold text-burgundy">${grandTotal.toLocaleString('en-US')}</span>
                             </div>
 
                             <Link

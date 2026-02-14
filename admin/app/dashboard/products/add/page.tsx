@@ -42,6 +42,8 @@ export default function AddProductPage() {
             description: form.description || undefined,
             unit_of_measure: form.unit_of_measure || undefined,
             intended_use: form.intended_use || undefined,
+            price: form.price ? parseFloat(form.price) : undefined,
+            quantity: form.quantity ? parseInt(form.quantity) : undefined,
         });
         setLoading(false);
 
@@ -170,7 +172,7 @@ export default function AddProductPage() {
                         <h3 className="font-serif text-sm font-semibold text-text-primary mb-4">Pricing & Stock</h3>
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium text-text-primary mb-1">Price (₫)</label>
+                                <label className="block text-sm font-medium text-text-primary mb-1">Price ($)</label>
                                 <input
                                     type="number"
                                     value={form.price}

@@ -19,7 +19,7 @@ export default function ContactPage() {
             <section className="border-b border-light-border bg-white">
                 <div className="mx-auto max-w-7xl px-4 py-16 text-center">
                     <p className="text-sm uppercase tracking-[0.2em] text-wine-gold font-medium mb-3">Get in Touch</p>
-                    <h1 className="font-serif text-4xl sm:text-5xl font-bold text-charcoal">Liên Hệ</h1>
+                    <h1 className="font-serif text-4xl sm:text-5xl font-bold text-charcoal">Contact Us</h1>
                     <p className="mt-3 text-warm-gray max-w-xl mx-auto">
                         We&apos;d love to hear from you. Send us a message or visit us at our tasting room.
                     </p>

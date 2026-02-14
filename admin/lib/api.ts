@@ -74,7 +74,7 @@ export async function createProduct(product: Partial<Product>): Promise<{ succes
 export async function updateProduct(id: string, product: Partial<Product>): Promise<{ success: boolean; error?: string }> {
     try {
         const res = await fetch(`${API_URL}/api/products/${id}`, {
-            method: 'PUT',
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(product),
         });
@@ -106,7 +106,7 @@ export async function checkApiHealth(): Promise<boolean> {
     }
 }
 
-/* ─── Mock Orders (since backend has no orders API) ─── */
+/* ─── Orders ─── */
 
 export interface Order {
     id: string;
@@ -118,57 +118,234 @@ export interface Order {
     created_at: string;
 }
 
-export function getMockOrders(): Order[] {
-    return [
-        {
-            id: 'ORD-001',
-            customer_name: 'Nguyễn Minh Anh',
-            customer_email: 'minhanh@email.com',
-            items: [{ product_name: 'VinoViet Classic Red', quantity: 2, price: 450000 }],
-            total: 900000,
-            status: 'confirmed',
-            created_at: '2026-02-10T10:30:00Z',
-        },
-        {
-            id: 'ORD-002',
-            customer_name: 'Trần Văn Hùng',
-            customer_email: 'vanhung@email.com',
-            items: [
-                { product_name: 'Highland White', quantity: 1, price: 380000 },
-                { product_name: 'Sparkling Rosé', quantity: 3, price: 520000 },
-            ],
-            total: 1940000,
-            status: 'shipped',
-            created_at: '2026-02-09T14:15:00Z',
-        },
-        {
-            id: 'ORD-003',
-            customer_name: 'Phạm Thị Lan',
-            customer_email: 'thilan@email.com',
-            items: [{ product_name: 'Reserve Cabernet', quantity: 6, price: 750000 }],
-            total: 4500000,
-            status: 'pending',
-            created_at: '2026-02-11T08:00:00Z',
-        },
-        {
-            id: 'ORD-004',
-            customer_name: 'Lê Hoàng Nam',
-            customer_email: 'hoangnam@email.com',
-            items: [{ product_name: 'Dalat Merlot', quantity: 1, price: 650000 }],
-            total: 650000,
-            status: 'delivered',
-            created_at: '2026-02-07T11:45:00Z',
-        },
-    ];
+const MOCK_ORDERS: Order[] = [
+    {
+        id: 'ORD-001',
+        customer_name: 'Emily Carter',
+        customer_email: 'emily.carter@email.com',
+        items: [{ product_name: 'KSP Classic Red', quantity: 2, price: 45 }],
+        total: 90,
+        status: 'confirmed',
+        created_at: '2026-02-10T10:30:00Z',
+    },
+    {
+        id: 'ORD-002',
+        customer_name: 'James Whitfield',
+        customer_email: 'james.w@email.com',
+        items: [
+            { product_name: 'Highland White', quantity: 1, price: 38 },
+            { product_name: 'Sparkling Rosé', quantity: 3, price: 52 },
+        ],
+        total: 194,
+        status: 'shipped',
+        created_at: '2026-02-09T14:15:00Z',
+    },
+    {
+        id: 'ORD-003',
+        customer_name: 'Sofia Martínez',
+        customer_email: 'sofia.m@email.com',
+        items: [{ product_name: 'Reserve Cabernet', quantity: 6, price: 75 }],
+        total: 450,
+        status: 'pending',
+        created_at: '2026-02-11T08:00:00Z',
+    },
+    {
+        id: 'ORD-004',
+        customer_name: 'David Laurent',
+        customer_email: 'david.l@email.com',
+        items: [{ product_name: 'Dalat Merlot', quantity: 1, price: 65 }],
+        total: 65,
+        status: 'delivered',
+        created_at: '2026-02-07T11:45:00Z',
+    },
+];
+
+/** Tries the real API; falls back to mock data.  Normalises backend field names to the UI Order shape. */
+export async function getOrders(): Promise<Order[]> {
+    try {
+        const res = await fetch(`${API_URL}/api/orders`);
+        if (!res.ok) {
+            console.error(`[Admin API] getOrders failed with status: ${res.status}`);
+            return MOCK_ORDERS;
+        }
+
+        const json: ApiResponse<any[]> = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+            // Mapping Logic
+            return json.data.map((row: any) => ({
+                id: row.id ?? row.order_id ?? '',
+                customer_name: row.customer_name ?? 'Unknown',
+                customer_email: row.customer_email ?? '',
+                items: row.items ?? [],
+                total: row.total ?? parseFloat(row.total_amount ?? 0),
+                status: (row.status ?? (row.order_status ?? 'pending')).toLowerCase() as Order['status'],
+                created_at: row.created_at ?? new Date().toISOString(),
+            }));
+        }
+
+        console.warn('[Admin API] getOrders returned invalid data structure:', json);
+        return MOCK_ORDERS;
+    } catch (error) {
+        console.error('[Admin API] Failed to fetch orders:', error);
+        return MOCK_ORDERS;
+    }
 }
 
-/* ─── Mock Categories ─── */
+/** For backward compat – the mock data function */
+export function getMockOrders(): Order[] {
+    return MOCK_ORDERS;
+}
+
+export async function getOrderById(id: string): Promise<Order | null> {
+    try {
+        const res = await fetch(`${API_URL}/api/orders/${id}`);
+        const json: ApiResponse<Order> = await res.json();
+        return json.success && json.data ? json.data : null;
+    } catch {
+        return MOCK_ORDERS.find(o => o.id === id) || null;
+    }
+}
+
+export async function updateOrderStatus(id: string, status: string): Promise<boolean> {
+    try {
+        const res = await fetch(`${API_URL}/api/orders/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_status: status.toUpperCase() }),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function updatePaymentStatus(id: string, paymentStatus: string): Promise<boolean> {
+    try {
+        const res = await fetch(`${API_URL}/api/orders/${id}/payment`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ payment_status: paymentStatus }),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+/* ─── Products (Advanced) ─── */
+
+export async function getEnums(): Promise<Record<string, string[]>> {
+    try {
+        const res = await fetch(`${API_URL}/api/products/enums`);
+        const json: ApiResponse<Record<string, string[]>> = await res.json();
+        return json.success && json.data ? json.data : {};
+    } catch {
+        return {};
+    }
+}
+
+export async function duplicateProduct(id: string, newSku: string, newName: string): Promise<{ success: boolean; product?: Product; error?: string }> {
+    try {
+        const res = await fetch(`${API_URL}/api/products/${id}/duplicate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newSku, newName }),
+        });
+        const json: ApiResponse<Product> = await res.json();
+        if (json.success && json.data) {
+            return { success: true, product: json.data };
+        }
+        return { success: false, error: json.message || 'Failed to duplicate product' };
+    } catch {
+        return { success: false, error: 'Network error' };
+    }
+}
+
+export async function updateStock(productId: string, quantity: number): Promise<boolean> {
+    try {
+        const res = await fetch(`${API_URL}/api/products/${productId}/stock`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantity }),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function getLowStockProducts(): Promise<Product[]> {
+    try {
+        const res = await fetch(`${API_URL}/api/products/low-stock-alerts`);
+        const json: ApiResponse<Product[]> = await res.json();
+        return json.success && json.data ? json.data : [];
+    } catch {
+        return [];
+    }
+}
+
+/* ─── Inventory ─── */
+
+export async function adjustInventory(data: { product_id: string; quantity_change: number; reason: string }): Promise<boolean> {
+    try {
+        const res = await fetch(`${API_URL}/api/inventory/adjust`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function getStockHistory(productId: string) {
+    try {
+        const res = await fetch(`${API_URL}/api/inventory/history/${productId}`);
+        const json: ApiResponse = await res.json();
+        return json.success && json.data ? json.data : [];
+    } catch {
+        return [];
+    }
+}
+
+/* ─── Categories ─── */
 
 export interface Category {
+    category_id?: string;
     id: string;
     name: string;
+    slug?: string;
     description: string;
-    product_count: number;
+    product_count?: number;
+    parent_id?: string;
+    image_url?: string;
+}
+
+export async function getCategories(): Promise<Category[]> {
+    try {
+        const res = await fetch(`${API_URL}/api/categories`);
+        const json: ApiResponse<any[]> = await res.json();
+        if (json.success && json.data && json.data.length > 0) {
+            return json.data.map((cat: Record<string, unknown>) => ({
+                id: (cat.category_id ?? cat.id ?? '') as string,
+                category_id: (cat.category_id ?? '') as string,
+                name: (cat.name ?? '') as string,
+                slug: (cat.slug ?? '') as string,
+                description: (cat.description ?? '') as string,
+                product_count: (cat.product_count ?? 0) as number,
+                parent_id: (cat.parent_id ?? undefined) as string | undefined,
+                image_url: (cat.image_url ?? undefined) as string | undefined,
+            }));
+        }
+        return getMockCategories();
+    } catch {
+        return getMockCategories();
+    }
 }
 
 export function getMockCategories(): Category[] {
@@ -181,3 +358,88 @@ export function getMockCategories(): Category[] {
         { id: 'cat-6', name: 'Fortified', description: 'Port and sherry styles', product_count: 2 },
     ];
 }
+
+export async function createCategory(data: { name: string; slug: string; description?: string; parent_id?: string; image_url?: string }): Promise<{ success: boolean; error?: string }> {
+    try {
+        const res = await fetch(`${API_URL}/api/categories`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        const json: ApiResponse = await res.json();
+        return { success: json.success, error: json.message };
+    } catch {
+        return { success: false, error: 'Network error' };
+    }
+}
+
+export async function updateCategory(id: string, data: Partial<Category>): Promise<{ success: boolean; error?: string }> {
+    try {
+        const res = await fetch(`${API_URL}/api/categories/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+        const json: ApiResponse = await res.json();
+        return { success: json.success, error: json.message };
+    } catch {
+        return { success: false, error: 'Network error' };
+    }
+}
+
+export async function deleteCategory(id: string): Promise<boolean> {
+    try {
+        const res = await fetch(`${API_URL}/api/categories/${id}`, { method: 'DELETE' });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+/* ─── Product Images ─── */
+
+export async function uploadProductImage(productId: string, base64Image: string, options?: { file_name?: string; is_primary?: boolean; sort_order?: number }): Promise<{ success: boolean; error?: string }> {
+    try {
+        const res = await fetch(`${API_URL}/api/products/${productId}/images`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: base64Image, ...options }),
+        });
+        const json: ApiResponse = await res.json();
+        return { success: json.success, error: json.message };
+    } catch {
+        return { success: false, error: 'Network error' };
+    }
+}
+
+export async function getProductImages(productId: string) {
+    try {
+        const res = await fetch(`${API_URL}/api/products/${productId}/images`);
+        const json: ApiResponse = await res.json();
+        return json.success && json.data ? json.data : [];
+    } catch {
+        return [];
+    }
+}
+
+export async function deleteProductImage(productId: string, assetId: string): Promise<boolean> {
+    try {
+        const res = await fetch(`${API_URL}/api/products/${productId}/images/${assetId}`, { method: 'DELETE' });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+
+export async function setPrimaryImage(productId: string, assetId: string): Promise<boolean> {
+    try {
+        const res = await fetch(`${API_URL}/api/products/${productId}/images/${assetId}/primary`, { method: 'PATCH' });
+        const json: ApiResponse = await res.json();
+        return json.success;
+    } catch {
+        return false;
+    }
+}
+

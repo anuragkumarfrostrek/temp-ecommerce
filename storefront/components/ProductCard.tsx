@@ -71,7 +71,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                     )}
 
                     <p className="mt-2 font-serif text-lg font-bold text-burgundy">
-                        {displayPrice.toLocaleString('vi-VN')}₫
+                        ${displayPrice.toLocaleString('en-US')}
                     </p>
 
                     {/* Add to Cart */}
